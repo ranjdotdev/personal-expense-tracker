@@ -28,7 +28,7 @@ model Category {
   name         String
   type         TransactionType
   order        Int
-  color        String
+  color        String?
   userId       String
   user         User            @relation(fields: [userId], references: [id])
   transactions Transaction[]

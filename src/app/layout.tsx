@@ -4,7 +4,7 @@ import { type Metadata } from "next";
 import { Geist } from "next/font/google";
 
 export const metadata: Metadata = {
-  title: "Personal Expence Tracker",
+  title: "Personal Expense Tracker",
   description: "A minimal website to track and manage your expenses",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
