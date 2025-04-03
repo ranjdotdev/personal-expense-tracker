@@ -1,8 +1,59 @@
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+model User {
+  id           String        @id @default(uuid())
+  email        String        @unique
+  password     String
+  name         String?
+  transactions Transaction[]
+  debts        Debt[]
+  categories   Category[]
+  createdAt    DateTime      @default(now())
+}
+
+model Category {
+  id           String          @id @default(uuid())
+  name         String
+  type         TransactionType
+  order        Int
+  color        String
+  userId       String
+  user         User            @relation(fields: [userId], references: [id])
+  transactions Transaction[]
+
+  @@unique([userId, name])
+}
+
+model Transaction {
+  id          String          @id @default(uuid())
+  amount      Float
+  description String
+  type        TransactionType
+  categoryId  String?
+  date        DateTime        @default(now()) // When it happened
+  userId      String
+  user        User            @relation(fields: [userId], references: [id])
+  category    Category?       @relation(fields: [categoryId], references: [id])
+}
+
+model Debt {
+  id          String   @id @default(uuid())
+  amount      Float
+  description String
+  isOwed      Boolean  @default(true) // True = owed to user
+  date        DateTime @default(now())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
 }
