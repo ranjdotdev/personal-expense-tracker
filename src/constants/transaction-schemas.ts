@@ -12,7 +12,8 @@ export const createTransactionSchema = z.object({
     .min(1, {
       message: "Description is required. Please provide a brief description.",
     })
-    .max(255),
+    .max(255)
+    .trim(),
   type: z.nativeEnum(TransactionType, {
     message: "Transaction type is required. Choose either INCOME or EXPENSE.",
   }),
@@ -34,6 +35,7 @@ export const updateTransactionSchema = z.object({
       message: "Description is required. Please provide a brief description.",
     })
     .max(255)
+    .trim()
     .optional(),
   type: z.nativeEnum(TransactionType).optional(),
   categoryId: z.string().uuid().optional(),

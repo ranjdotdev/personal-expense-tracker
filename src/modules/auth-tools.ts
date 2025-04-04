@@ -1,16 +1,19 @@
 import jwt from "jsonwebtoken";
-import { type User, type UserPayload } from "@/constants/user-schemas";
+import { type UserPayload } from "@/constants/user-schemas";
+import { headers } from "next/headers";
 
-export function createJWT(user: Pick<User, "id" | "name">): string {
-  const secret = process.env.JWT_SECRET;
-  if (!secret) {
-    throw new Error("JWT_SECRET is not defined!");
-  }
+export async function getUserId(): Promise<string> {
+  const h = await headers();
+  return h.get("user-id")!;
+}
+
+export function createJWT(user: { id: string; name?: string }): string {
+  const secret = process.env.JWT_SECRET!;
 
   return jwt.sign(
     {
       id: user.id,
-      name: user.name ?? undefined,
+      name: user.name ?? "",
     },
     secret,
     { expiresIn: "7d" },
@@ -22,22 +25,9 @@ export function getUserFromToken(token: string): {
   error?: string;
 } {
   try {
-    if (!token.startsWith("Bearer ")) {
-      return { error: "Invalid token" };
-    }
+    const secret = process.env.JWT_SECRET!;
 
-    const jwtToken = token.split(" ")[1];
-    if (!jwtToken) {
-      return { error: "Token missing" };
-    }
-
-    const secret = process.env.JWT_SECRET;
-    if (!secret) {
-      console.error("JWT_SECRET is missing!");
-      return { error: "Internal server error" };
-    }
-
-    const payload = jwt.verify(jwtToken, secret) as UserPayload;
+    const payload = jwt.verify(token, secret) as UserPayload;
     return { payload };
   } catch (error) {
     console.error("JWT verification failed:", error);

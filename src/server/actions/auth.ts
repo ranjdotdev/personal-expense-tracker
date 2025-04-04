@@ -28,8 +28,8 @@ export async function signup(data: SignupData) {
     const user = await db.$transaction(async (tx) => {
       const newUser = await tx.user.create({
         data: {
-          name: validatedData.name?.trim(),
-          email: validatedData.email.trim(),
+          name: validatedData.name ?? "",
+          email: validatedData.email,
           password: hashedPassword,
         },
       });

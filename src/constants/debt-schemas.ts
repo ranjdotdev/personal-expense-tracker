@@ -11,7 +11,8 @@ export const createDebtSchema = z.object({
     .min(1, {
       message: "Description is required. Please add a brief description.",
     })
-    .max(255),
+    .max(255)
+    .trim(),
   isOwed: z.boolean().default(true), // True if you owe, false if owed to you
   date: z.date().default(() => new Date()),
   userId: z.string().uuid(),
