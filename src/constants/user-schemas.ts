@@ -1,5 +1,17 @@
 import { z } from "zod";
 
+export type User = {
+  id: string;
+  name?: string;
+  email: string;
+  password: string;
+};
+
+export interface UserPayload {
+  id: string;
+  name: string;
+}
+
 export type SignupData = z.infer<typeof signupSchema>;
 export type SigninData = z.infer<typeof signinSchema>;
 export type updateUserData = z.infer<typeof updateUserSchema>;
