@@ -2,8 +2,8 @@ import type { JSX } from "react";
 
 export default function HomePage(): JSX.Element {
   return (
-    <main className="bg-background text-foreground flex min-h-screen items-center justify-center">
+    <div className="relative z-40 flex h-full w-full flex-row items-center justify-center text-neutral-300 selection:bg-neutral-700">
       nothing.
-    </main>
+    </div>
   );
 }
