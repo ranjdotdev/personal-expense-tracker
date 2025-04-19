@@ -1,30 +1,38 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { getUserFromToken } from "@/modules/auth-tools";
+import type { UserPayload } from "@/constants/user-schemas";
 import { publicRoutes } from "@/constants/vars";
+import { getUserFromToken } from "@/modules/auth-tools";
+import { NextResponse, type NextRequest } from "next/server";
 
-export function authMiddleware(r: NextRequest) {
+export async function authMiddleware(r: NextRequest) {
   const path = r.nextUrl.pathname;
-
-  if (publicRoutes.includes(path)) {
-    return NextResponse.next();
-  }
-
   const token = r.cookies.get("token")?.value;
 
-  if (!token) {
-    return NextResponse.redirect(new URL("/signin", r.url));
-  }
+  let user: UserPayload | undefined = undefined;
 
-  const { payload, error } = getUserFromToken(token);
-
-  if (error) {
-    console.error("Token verification failed:", error);
-    return NextResponse.redirect(new URL("/signin", r.url));
+  if (token) {
+    const { payload, error } = await getUserFromToken(token);
+    if (!error && payload) {
+      user = payload;
+    }
   }
 
   const requestHeaders = new Headers(r.headers);
-  requestHeaders.set("user-id", payload!.id);
-  requestHeaders.set("user-name", payload?.name ?? "");
+  if (user) {
+    requestHeaders.set("user-id", user.id);
+    requestHeaders.set("user-name", user.name || "");
+  }
+
+  if (publicRoutes.includes(path)) {
+    return NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    });
+  }
+
+  if (!token || !user) {
+    return NextResponse.redirect(new URL("/signin", r.url));
+  }
 
   return NextResponse.next({
     request: {

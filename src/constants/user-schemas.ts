@@ -7,10 +7,10 @@ export interface User {
   password: string;
 }
 
-export interface UserPayload {
+export type UserPayload = {
   id: string;
   name: string;
-}
+};
 
 export type SignupData = z.infer<typeof signupSchema>;
 export type SigninData = z.infer<typeof signinSchema>;
