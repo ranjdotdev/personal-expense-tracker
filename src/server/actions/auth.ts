@@ -9,7 +9,7 @@ import {
   type SignupData,
   type SigninData,
 } from "@/constants/user-schemas";
-import { createJWT } from "@/modules/auth-tools";
+import { createJWT, getUser } from "@/modules/auth-tools";
 
 export async function signup(data: SignupData) {
   try {
@@ -86,7 +86,7 @@ export async function signin(data: SigninData) {
       return { success: false, message: "Invalid email or password" };
     }
     if (!(await bcrypt.compare(validatedData.password, user.password))) {
-      return { success: false, message: "Invalid password or password" };
+      return { success: false, message: "Invalid email or password" };
     }
 
     const token = await createJWT({
@@ -120,6 +120,19 @@ export async function signout() {
     return { success: true, message: "Logged out successfully" };
   } catch (error) {
     console.error("Signout error:", error);
+    return { success: false, message: "Internal server error" };
+  }
+}
+
+export async function getCurrentUser() {
+  try {
+    const user = await getUser();
+    if (!user) {
+      return { success: false, message: "Not authenticated" };
+    }
+    return { success: true, data: user };
+  } catch (error) {
+    console.error("Get user error:", error);
     return { success: false, message: "Internal server error" };
   }
 }

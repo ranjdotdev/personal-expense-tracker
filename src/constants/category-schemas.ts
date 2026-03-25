@@ -28,7 +28,7 @@ export const categorySchema = z.object({
     .min(1, { message: "Order must be a positive integer." }),
   color: z
     .string()
-    .min(1, { message: "Color is required. Please provide a color code." })
-    .max(7), // e.g., "#FF5733"
+    .max(7) // e.g., "#FF5733"
+    .optional(), // Optional, matches Prisma schema
   userId: z.string().uuid(),
 });
