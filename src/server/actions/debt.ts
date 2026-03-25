@@ -7,11 +7,11 @@ import {
   updateDebtSchema,
   type DebtData,
 } from "@/constants/debt-schemas";
-import { getUserId } from "@/modules/auth-tools";
+import { getUserId, AuthenticationError } from "@/modules/auth-tools";
 
 export async function getDebts() {
-  const userID = await getUserId();
   try {
+    const userID = await getUserId();
     const debts = await db.debt.findMany({
       where: { userId: userID },
       orderBy: { date: "desc" },
@@ -23,6 +23,13 @@ export async function getDebts() {
       data: debts,
     };
   } catch (error) {
+    if (error instanceof AuthenticationError) {
+      return {
+        success: false,
+        message: "Authentication required",
+        data: null,
+      };
+    }
     console.error("Error fetching debts:", error);
     return {
       success: false,
@@ -33,8 +40,8 @@ export async function getDebts() {
 }
 
 export async function createDebt(data: DebtData) {
-  const userID = await getUserId();
   try {
+    const userID = await getUserId();
     const validatedData = createDebtSchema.parse({
       ...data,
       userId: userID,
@@ -56,6 +63,13 @@ export async function createDebt(data: DebtData) {
       data: debt,
     };
   } catch (error) {
+    if (error instanceof AuthenticationError) {
+      return {
+        success: false,
+        message: "Authentication required",
+        data: null,
+      };
+    }
     if (error instanceof z.ZodError) {
       return {
         success: false,
@@ -74,8 +88,8 @@ export async function createDebt(data: DebtData) {
 }
 
 export async function updateDebt(id: string, data: Partial<DebtData>) {
-  const userID = await getUserId();
   try {
+    const userID = await getUserId();
     const existingDebt = await db.debt.findUnique({
       where: { id },
     });
@@ -109,6 +123,13 @@ export async function updateDebt(id: string, data: Partial<DebtData>) {
       data: updatedDebt,
     };
   } catch (error) {
+    if (error instanceof AuthenticationError) {
+      return {
+        success: false,
+        message: "Authentication required",
+        data: null,
+      };
+    }
     if (error instanceof z.ZodError) {
       return {
         success: false,
@@ -127,8 +148,8 @@ export async function updateDebt(id: string, data: Partial<DebtData>) {
 }
 
 export async function deleteDebt(id: string) {
-  const userID = await getUserId();
   try {
+    const userID = await getUserId();
     const existingDebt = await db.debt.findUnique({
       where: { id },
     });
@@ -159,6 +180,13 @@ export async function deleteDebt(id: string) {
       data: deletedDebt,
     };
   } catch (error) {
+    if (error instanceof AuthenticationError) {
+      return {
+        success: false,
+        message: "Authentication required",
+        data: null,
+      };
+    }
     console.error("Debt deletion error:", error);
     return {
       success: false,
@@ -169,8 +197,8 @@ export async function deleteDebt(id: string) {
 }
 
 export async function getDebtsByDateRange(startDate: Date, endDate: Date) {
-  const userID = await getUserId();
   try {
+    const userID = await getUserId();
     const debts = await db.debt.findMany({
       where: {
         userId: userID,
@@ -188,6 +216,13 @@ export async function getDebtsByDateRange(startDate: Date, endDate: Date) {
       data: debts,
     };
   } catch (error) {
+    if (error instanceof AuthenticationError) {
+      return {
+        success: false,
+        message: "Authentication required",
+        data: null,
+      };
+    }
     console.error("Error fetching debts by date range:", error);
     return {
       success: false,
@@ -198,8 +233,8 @@ export async function getDebtsByDateRange(startDate: Date, endDate: Date) {
 }
 
 export async function getDebtSummary() {
-  const userID = await getUserId();
   try {
+    const userID = await getUserId();
     const debts = await db.debt.findMany({
       where: { userId: userID },
     });
@@ -226,6 +261,13 @@ export async function getDebtSummary() {
       },
     };
   } catch (error) {
+    if (error instanceof AuthenticationError) {
+      return {
+        success: false,
+        message: "Authentication required",
+        data: null,
+      };
+    }
     console.error("Error calculating debt summary:", error);
     return {
       success: false,

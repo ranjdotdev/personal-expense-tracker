@@ -7,11 +7,11 @@ import {
   type Category,
   type CategoryData,
 } from "@/constants/category-schemas";
-import { getUserId } from "@/modules/auth-tools";
+import { getUserId, AuthenticationError } from "@/modules/auth-tools";
 
 export async function getCategories() {
-  const userID = await getUserId();
   try {
+    const userID = await getUserId();
     const categories = await db.category.findMany({
       where: { userId: userID },
       orderBy: { order: "asc" },
@@ -23,6 +23,13 @@ export async function getCategories() {
       data: categories,
     };
   } catch (error) {
+    if (error instanceof AuthenticationError) {
+      return {
+        success: false,
+        message: "Authentication required",
+        data: null,
+      };
+    }
     console.error("Error fetching categories:", error);
     return {
       success: false,
@@ -33,8 +40,8 @@ export async function getCategories() {
 }
 
 export async function createCategory(data: CategoryData) {
-  const userID = await getUserId();
   try {
+    const userID = await getUserId();
     const validatedData = categorySchema.parse(data);
 
     const existingCategory = await db.category.findUnique({
@@ -74,6 +81,13 @@ export async function createCategory(data: CategoryData) {
       data: category,
     };
   } catch (error) {
+    if (error instanceof AuthenticationError) {
+      return {
+        success: false,
+        message: "Authentication required",
+        data: null,
+      };
+    }
     if (error instanceof z.ZodError) {
       return {
         success: false,
@@ -92,8 +106,8 @@ export async function createCategory(data: CategoryData) {
 }
 
 export async function deleteCategory(catID: string) {
-  const userID = await getUserId();
   try {
+    const userID = await getUserId();
     const existingCategory = await db.category.findUnique({
       where: {
         id: catID,
@@ -103,7 +117,7 @@ export async function deleteCategory(catID: string) {
     if (!existingCategory) {
       return {
         success: false,
-        message: "Category with this name deos not exist.",
+        message: "Category with this name does not exist.",
       };
     }
 
@@ -137,6 +151,13 @@ export async function deleteCategory(catID: string) {
       data: deletedCategory,
     };
   } catch (error) {
+    if (error instanceof AuthenticationError) {
+      return {
+        success: false,
+        message: "Authentication required",
+        data: null,
+      };
+    }
     if (error instanceof z.ZodError) {
       return {
         success: false,
@@ -155,8 +176,8 @@ export async function deleteCategory(catID: string) {
 }
 
 export async function updateCategory(data: Category) {
-  const userID = await getUserId();
   try {
+    const userID = await getUserId();
     const validatedData = categorySchema.parse(data);
 
     const existingCategory = await db.category.findUnique({
@@ -169,6 +190,13 @@ export async function updateCategory(data: Category) {
       return {
         success: false,
         message: "Category not found",
+      };
+    }
+
+    if (existingCategory.userId !== userID) {
+      return {
+        success: false,
+        message: "You don't have permission to update this category",
       };
     }
 
@@ -206,6 +234,13 @@ export async function updateCategory(data: Category) {
       data: updatedCategory,
     };
   } catch (error) {
+    if (error instanceof AuthenticationError) {
+      return {
+        success: false,
+        message: "Authentication required",
+        data: null,
+      };
+    }
     if (error instanceof z.ZodError) {
       return {
         success: false,
@@ -214,7 +249,6 @@ export async function updateCategory(data: Category) {
         data: null,
       };
     }
-
     console.error("Category update error:", error);
     return {
       success: false,
@@ -225,8 +259,8 @@ export async function updateCategory(data: Category) {
 }
 
 export async function swapCategory(catID: string, newOrder: number) {
-  const userID = await getUserId();
   try {
+    const userID = await getUserId();
     const category = await db.category.findUnique({
       where: { id: catID },
     });
@@ -266,7 +300,7 @@ export async function swapCategory(catID: string, newOrder: number) {
       };
     }
 
-    await db.$transaction(async (tx) => {
+    const updatedCategory = await db.$transaction(async (tx) => {
       if (newOrder > currentOrder) {
         await tx.category.updateMany({
           where: {
@@ -295,15 +329,10 @@ export async function swapCategory(catID: string, newOrder: number) {
         });
       }
 
-      await tx.category.update({
+      return tx.category.update({
         where: { id: catID },
         data: { order: newOrder },
       });
-    });
-
-    // This extra database interaction can be removed in production
-    const updatedCategory = await db.category.findUnique({
-      where: { id: catID },
     });
 
     return {
@@ -312,6 +341,13 @@ export async function swapCategory(catID: string, newOrder: number) {
       data: updatedCategory,
     };
   } catch (error) {
+    if (error instanceof AuthenticationError) {
+      return {
+        success: false,
+        message: "Authentication required",
+        data: null,
+      };
+    }
     console.error("Category swap error:", error);
     return {
       success: false,

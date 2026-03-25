@@ -7,11 +7,11 @@ import {
   updateTransactionSchema,
   type TransactionData,
 } from "@/constants/transaction-schemas";
-import { getUserId } from "@/modules/auth-tools";
+import { getUserId, AuthenticationError } from "@/modules/auth-tools";
 
 export async function getTransactions() {
-  const userID = await getUserId();
   try {
+    const userID = await getUserId();
     const transactions = await db.transaction.findMany({
       where: { userId: userID },
       include: { category: true },
@@ -24,6 +24,13 @@ export async function getTransactions() {
       data: transactions,
     };
   } catch (error) {
+    if (error instanceof AuthenticationError) {
+      return {
+        success: false,
+        message: "Authentication required",
+        data: null,
+      };
+    }
     console.error("Error fetching transactions:", error);
     return {
       success: false,
@@ -34,8 +41,8 @@ export async function getTransactions() {
 }
 
 export async function createTransaction(data: TransactionData) {
-  const userID = await getUserId();
   try {
+    const userID = await getUserId();
     const validatedData = createTransactionSchema.parse({
       ...data,
       userId: userID,
@@ -85,6 +92,13 @@ export async function createTransaction(data: TransactionData) {
       data: transaction,
     };
   } catch (error) {
+    if (error instanceof AuthenticationError) {
+      return {
+        success: false,
+        message: "Authentication required",
+        data: null,
+      };
+    }
     if (error instanceof z.ZodError) {
       return {
         success: false,
@@ -106,8 +120,8 @@ export async function updateTransaction(
   id: string,
   data: Partial<TransactionData>,
 ) {
-  const userID = await getUserId();
   try {
+    const userID = await getUserId();
     const existingTransaction = await db.transaction.findUnique({
       where: { id },
     });
@@ -170,6 +184,13 @@ export async function updateTransaction(
       data: updatedTransaction,
     };
   } catch (error) {
+    if (error instanceof AuthenticationError) {
+      return {
+        success: false,
+        message: "Authentication required",
+        data: null,
+      };
+    }
     if (error instanceof z.ZodError) {
       return {
         success: false,
@@ -188,8 +209,8 @@ export async function updateTransaction(
 }
 
 export async function deleteTransaction(id: string) {
-  const userID = await getUserId();
   try {
+    const userID = await getUserId();
     const existingTransaction = await db.transaction.findUnique({
       where: { id },
     });
@@ -220,6 +241,13 @@ export async function deleteTransaction(id: string) {
       data: deletedTransaction,
     };
   } catch (error) {
+    if (error instanceof AuthenticationError) {
+      return {
+        success: false,
+        message: "Authentication required",
+        data: null,
+      };
+    }
     console.error("Transaction deletion error:", error);
     return {
       success: false,
@@ -233,8 +261,8 @@ export async function getTransactionsByDateRange(
   startDate: Date,
   endDate: Date,
 ) {
-  const userID = await getUserId();
   try {
+    const userID = await getUserId();
     const transactions = await db.transaction.findMany({
       where: {
         userId: userID,
@@ -253,6 +281,13 @@ export async function getTransactionsByDateRange(
       data: transactions,
     };
   } catch (error) {
+    if (error instanceof AuthenticationError) {
+      return {
+        success: false,
+        message: "Authentication required",
+        data: null,
+      };
+    }
     console.error("Error fetching transactions by date range:", error);
     return {
       success: false,
@@ -263,8 +298,8 @@ export async function getTransactionsByDateRange(
 }
 
 export async function getTransactionsByCategory(categoryId: string) {
-  const userID = await getUserId();
   try {
+    const userID = await getUserId();
     const category = await db.category.findUnique({
       where: {
         id: categoryId,
@@ -295,6 +330,13 @@ export async function getTransactionsByCategory(categoryId: string) {
       data: transactions,
     };
   } catch (error) {
+    if (error instanceof AuthenticationError) {
+      return {
+        success: false,
+        message: "Authentication required",
+        data: null,
+      };
+    }
     console.error("Error fetching transactions by category:", error);
     return {
       success: false,

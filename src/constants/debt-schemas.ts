@@ -13,7 +13,7 @@ export const createDebtSchema = z.object({
     })
     .max(255)
     .trim(),
-  isOwed: z.boolean().default(true), // True if you owe, false if owed to you
+  isOwed: z.boolean().default(true), // True if owed to you, false if you owe
   date: z.date().default(() => new Date()),
   userId: z.string().uuid(),
 });
